@@ -7,11 +7,7 @@ class Repository {
     this.adapter = new MongoAdapter();
   }
 
-  store(doc) {
-    this.retrieve(doc);
-  }
-
-  retrieveVersion(id, version) {
+  retrieveRaw(id, version) {
     return new Promise((resolve, reject) => {
       this.adapter.execute().then(db => {
         const where = { [`body.${this.uniqueId}`]: id };
@@ -24,14 +20,52 @@ class Repository {
             reject(err);
             return;
           }
-          resolve(docs[docs.length-1].body);
+
+          if (!docs.length) {
+            resolve(undefined);
+            return;
+          }
+
+          resolve(docs[docs.length-1]);
         });
+      }, reject);
+    });
+  }
+
+  retrieveVersion(id, version) {
+    return new Promise((resolve, reject) => {
+      this.retrieveRaw(id, version).then(rawDoc => {
+        if (!rawDoc) {
+          resolve(undefined);
+          return;
+        }
+        resolve(rawDoc.body);
       }, reject);
     });
   }
 
   retrieve(id) {
     return this.retrieveVersion(id);
+  }
+
+  store(doc) {
+    return new Promise((resolve, reject) => {
+      this.retrieveRaw(doc[this.uniqueId]).then(currentDoc => {
+        const version = currentDoc ? currentDoc.version + 1 : 1;
+        this.adapter.execute().then(db => {
+          const collection = db.collection(this.name);
+          const envelope = { version, body: doc };
+          collection.insert(envelope, (err, _doc) => {
+            if (err) {
+              reject(err);
+              return;
+            }
+
+            resolve(_doc);
+          });
+        });
+      });
+    });
   }
 
   getProperty(doc, property) {
