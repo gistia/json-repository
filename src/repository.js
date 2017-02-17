@@ -9,21 +9,16 @@ class Repository {
 
   retrieveRaw(id, version) {
     return new Promise((resolve, reject) => {
-      this.adapter.connect().then(db => {
+      this.adapter.collection(this.name).then(collection => {
         const where = { [`body.${this.uniqueId}`]: id };
         if (version) {
           where.version = version;
         }
-        const collection = db.collection(this.name);
         collection.find(where).toArray((err, docs) => {
-          if (err) {
-            reject(err);
-            return;
-          }
+          if (err) { return reject(err); }
 
           if (!docs.length) {
-            resolve(undefined);
-            return;
+            return resolve(undefined);
           }
 
           resolve(docs[docs.length-1]);
@@ -49,8 +44,7 @@ class Repository {
     return new Promise((resolve, reject) => {
       this.currentVersion(doc[this.uniqueId]).then(currentVersion => {
         const version = (currentVersion || 0) + 1;
-        this.adapter.connect().then(db => {
-          const collection = db.collection(this.name);
+        this.adapter.collection(this.name).then(collection => {
           const envelope = { version, body: doc };
           collection.insert(envelope, (err, _doc) => {
             if (err) { return reject(err); }
