@@ -1,5 +1,7 @@
 # JSON Document Repository Server
 
+![](https://codeship.com/projects/203040/status?branch=master)
+
 This server is responsible for storing JSON documents with the following features:
 
 - MongoDB is used for storage
