@@ -1,3 +1,6 @@
+const zlib = require('zlib');
+const Promise = require('es6-promise').Promise;
+
 const Repository = require('./repository');
 
 class Server {
@@ -36,8 +39,31 @@ class Server {
   }
 
   create(req, res) {
-    this.repo.store(req.body).then(result => {
-      res.json({success: true, version: result.version});
+    const errHandler = (err) => this.sendError(res, 'Error decoding body', err);
+    this.decodeBody(req).then(body => {
+      this.repo.store(body).then(result => {
+        res.json({success: true, version: result.version});
+      });
+    }, errHandler).catch(errHandler);
+  }
+
+  sendError(res, message, error) {
+    // eslint-disable-next-line no-console
+    console.stack(error);
+    res.status(500).json({ message, error });
+  }
+
+  decodeBody(req) {
+    if (req.headers['x-content-encoding'] !== 'gzip') {
+      return Promise.resolve(req.body);
+    };
+
+    return new Promise((resolve, reject) => {
+      const buf = new Buffer(req.body.data, 'utf-8');
+      zlib.gunzip(buf, (err, result) => {
+        if (err) { return reject(err); }
+        resolve(JSON.parse(result.toString('utf-8')));
+      });
     });
   }
 

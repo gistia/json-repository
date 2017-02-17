@@ -38,6 +38,7 @@
     "globals": {
       "__DEVSERVER__": true,
       "__DEVCLIENT__": true,
+      "Buffer": true,
       "process": true,
       "global": true,
       "expect": true,

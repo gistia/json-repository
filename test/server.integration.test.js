@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const chai = require('chai');
 const chaiHttp = require('chai-http');
+const zlib = require('zlib');
 
 const Server = require('../src/server');
 const MongoTestHelper = require('./support/mongo-test-helper');
@@ -62,6 +63,26 @@ describe('Server', () => {
   });
 
   describe('create', () => {
+    describe('compressed payload', () => {
+      it('creates a new valid document', (done) => {
+        const doc = { id: 1, name: 'Felipe' };
+        const buf = new Buffer(JSON.stringify(doc), 'utf-8');
+        zlib.gzip(buf, (err, result) => {
+          if (err) { return done(err); }
+          chai.request(app).post('/tests').set('X-Content-Encoding', 'gzip').send(result).then(_ => {
+            mongoHelper.retrieveData().then(data => {
+              const doc = data[0];
+
+              expect(data.length).to.eql(1);
+              expect(doc.version).to.eql(1);
+              expect(doc.body.name).to.eql('Felipe');
+              done();
+            }, done).catch(done);
+          }, done).catch(done);
+        });
+      });
+    });
+
     it('cretes a new document', (done) => {
       const doc = { id: 1, name: 'Felipe' };
       chai.request(app).post('/tests').send(doc).then(_ => {
