@@ -2,9 +2,8 @@ const Repository = require('../src/repository');
 const MongoAdapter = require('../src/mongo-adapter');
 const MongoTestHelper = require('./support/mongo-test-helper');
 
-const mongoHelper = new MongoTestHelper();
-
 const adapter = new MongoAdapter();
+const mongoHelper = new MongoTestHelper();
 
 describe('Repository', () => {
   let repo;
