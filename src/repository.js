@@ -9,20 +9,17 @@ class Repository {
 
   retrieveRaw(id, version) {
     return new Promise((resolve, reject) => {
-      this.adapter.collection(this.name).then(collection => {
-        const where = { [`body.${this.uniqueId}`]: id };
-        if (version) {
-          where.version = version;
+      const where = { [`body.${this.uniqueId}`]: id };
+      if (version) {
+        where.version = version;
+      }
+
+      const builder = this.adapter.builder(this.name);
+      builder.find(where).execute().then(docs => {
+        if (!docs.length) {
+          return resolve(undefined);
         }
-        collection.find(where).toArray((err, docs) => {
-          if (err) { return reject(err); }
-
-          if (!docs.length) {
-            return resolve(undefined);
-          }
-
-          resolve(docs[docs.length-1]);
-        });
+        resolve(docs[docs.length-1]);
       }, reject).catch(reject);
     });
   }
@@ -57,16 +54,15 @@ class Repository {
 
   currentVersion(id) {
     return new Promise((resolve, reject) => {
-      this.adapter.collection(this.name).then(collection => {
-        const where = { [`body.${this.uniqueId}`]: id };
-        collection.find(where, { version: 1 }).sort({ version: -1 }).limit(1).toArray((err, docs) => {
-          if (err) { return reject(err); }
-          if (docs.length) {
-            return resolve(docs[0].version);
-          }
-          resolve(undefined);
-        });
-      }, reject);
+      const where = { [`body.${this.uniqueId}`]: id };
+      const builder = this.adapter.builder(this.name);
+      
+      builder.find(where, { version: 1 }).sort({ version: -1 }).limit(1).execute().then(docs => {
+        if (docs.length) {
+          return resolve(docs[0].version);
+        }
+        resolve(undefined);
+      }, reject).catch(reject);
     });
   }
 
