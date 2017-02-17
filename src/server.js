@@ -59,7 +59,7 @@ class Server {
     };
 
     return new Promise((resolve, reject) => {
-      const buf = new Buffer(req.body.data, 'utf-8');
+      const buf = new Buffer(req.body, 'utf-8');
       zlib.gunzip(buf, (err, result) => {
         if (err) { return reject(err); }
         resolve(JSON.parse(result.toString('utf-8')));
