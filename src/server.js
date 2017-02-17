@@ -8,11 +8,19 @@ class Server {
     this.repo = new Repository(collection, uniqueId);
   }
 
+  log(...s) {
+    if (process.env.NODE_ENV === 'test') {
+      return;
+    }
+    // eslint-disable-next-line no-console
+    console.log(...s);
+  }
+
   addRoutes() {
     const path = `/${this.collection}`;
-    console.log(`  + show       GET    ${path}/:id`);
+    this.log(`  + show       GET    ${path}/:id`);
     this.app.get(`${path}/:id`, this.show.bind(this));
-    console.log(`  + create     POST   ${path}`);
+    this.log(`  + create     POST   ${path}`);
     this.app.post(`${path}`, this.create.bind(this));
   }
 
@@ -35,8 +43,8 @@ class Server {
 
   run(port) {
     this.addRoutes();
-    this.app.listen(port, function () {
-      console.log(`Server listening on port ${port}!`)
+    this.app.listen(port, () => {
+      this.log(`Server listening on port ${port}!`);
     });
   }
 }

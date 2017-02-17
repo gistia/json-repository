@@ -41,6 +41,15 @@ class MongoTestHelper {
       }, reject);
     });
   }
+
+  eraseCollection() {
+    return new Promise((resolve, reject) => {
+      adapter.connect().then(db => {
+        db.collection('tests').remove();
+        resolve();
+      }, reject).catch(reject);
+    });
+  }
 }
 
 module.exports = MongoTestHelper;

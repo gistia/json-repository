@@ -47,7 +47,7 @@ describe('Repository', () => {
     it('stores a new document', (done) => {
       repo.store({ id: 1, name: 'Felipe' }).then(data => {
         expect(data.version).to.eql(1);
-        
+
         mongoHelper.retrieveData().then(data => {
           const doc = data[0];
 
@@ -55,6 +55,7 @@ describe('Repository', () => {
           expect(doc.version).to.eql(1);
           expect(doc.body.id).to.eql(1);
           expect(doc.body.name).to.eql('Felipe');
+
           done();
         }, done).catch(done);
       }, done).catch(done);
@@ -84,7 +85,7 @@ describe('Repository', () => {
           expect(version).to.eql(2);
           done();
         }, done).catch(done);
-      }, done).catch(done);      
+      }, done).catch(done);
     });
 
     it('returns undefined if there is no doc with id', (done) => {

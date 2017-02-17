@@ -56,7 +56,7 @@ class Repository {
     return new Promise((resolve, reject) => {
       const where = { [`body.${this.uniqueId}`]: id };
       const builder = this.adapter.builder(this.name);
-      
+
       builder.find(where, { version: 1 }).sort({ version: -1 }).limit(1).execute().then(docs => {
         if (docs.length) {
           return resolve(docs[0].version);
