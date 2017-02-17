@@ -9,7 +9,7 @@ class Repository {
 
   retrieveRaw(id, version) {
     return new Promise((resolve, reject) => {
-      this.adapter.execute().then(db => {
+      this.adapter.connect().then(db => {
         const where = { [`body.${this.uniqueId}`]: id };
         if (version) {
           where.version = version;
@@ -28,19 +28,16 @@ class Repository {
 
           resolve(docs[docs.length-1]);
         });
-      }, reject);
+      }, reject).catch(reject);
     });
   }
 
   retrieveVersion(id, version) {
     return new Promise((resolve, reject) => {
       this.retrieveRaw(id, version).then(rawDoc => {
-        if (!rawDoc) {
-          resolve(undefined);
-          return;
-        }
+        if (!rawDoc) { return resolve(undefined); }
         resolve(rawDoc.body);
-      }, reject);
+      }, reject).catch(reject);
     });
   }
 
@@ -50,21 +47,32 @@ class Repository {
 
   store(doc) {
     return new Promise((resolve, reject) => {
-      this.retrieveRaw(doc[this.uniqueId]).then(currentDoc => {
-        const version = currentDoc ? currentDoc.version + 1 : 1;
-        this.adapter.execute().then(db => {
+      this.currentVersion(doc[this.uniqueId]).then(currentVersion => {
+        const version = (currentVersion || 0) + 1;
+        this.adapter.connect().then(db => {
           const collection = db.collection(this.name);
           const envelope = { version, body: doc };
           collection.insert(envelope, (err, _doc) => {
-            if (err) {
-              reject(err);
-              return;
-            }
-
+            if (err) { return reject(err); }
             resolve(_doc);
           });
+        }, reject).catch(reject);
+      }, reject).catch(reject);
+    });
+  }
+
+  currentVersion(id) {
+    return new Promise((resolve, reject) => {
+      this.adapter.collection(this.name).then(collection => {
+        const where = { [`body.${this.uniqueId}`]: id };
+        collection.find(where, { version: 1 }).sort({ version: -1 }).limit(1).toArray((err, docs) => {
+          if (err) { return reject(err); }
+          if (docs.length) {
+            return resolve(docs[0].version);
+          }
+          resolve(undefined);
         });
-      });
+      }, reject);
     });
   }
 

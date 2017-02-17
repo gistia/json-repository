@@ -6,7 +6,7 @@ const adapter = new MongoAdapter();
 class MongoTestHelper {
   setupData(data) {
     return new Promise((resolve, reject) => {
-      this.execute().then(collection => {
+      this.connect().then(collection => {
         collection.insertMany(data, (err, doc) => {
           if (err) {
             reject(err);
@@ -21,7 +21,7 @@ class MongoTestHelper {
 
   retrieveData() {
     return new Promise((resolve, reject) => {
-      this.execute().then(collection => {
+      this.connect().then(collection => {
         collection.find({}).toArray((err, docs) => {
           if (err) {
             reject(err);
@@ -34,9 +34,9 @@ class MongoTestHelper {
     });
   }
 
-  execute() {
+  connect() {
     return new Promise((resolve, reject) => {
-      adapter.execute().then(db => {
+      adapter.connect().then(db => {
         resolve(db.collection('tests'));
       }, reject);
     });

@@ -10,8 +10,9 @@ describe('Repository', () => {
   let repo;
 
   beforeEach((done) => {
-    adapter.execute().then(db => {
-      repo = new Repository('tests', 'id');
+    repo = new Repository('tests', 'id');
+
+    adapter.connect().then(db => {
       db.collection('tests').remove();
       done();
     });
@@ -23,8 +24,8 @@ describe('Repository', () => {
         repo.retrieve(1).then(doc => {
           expect(doc.name).to.eql('Felipe');
           done();
-        }, done);
-      }, done);
+        }, done).catch(done);
+      }, done).catch(done);
     });
   });
 
@@ -46,7 +47,12 @@ describe('Repository', () => {
     it('stores a new document', (done) => {
       repo.store({ id: 1, name: 'Felipe' }).then(_doc => {
         mongoHelper.retrieveData().then(data => {
+          const doc = data[0];
+
           expect(data.length).to.eql(1);
+          expect(doc.version).to.eql(1);
+          expect(doc.body.id).to.eql(1);
+          expect(doc.body.name).to.eql('Felipe');
           done();
         }, done).catch(done);
       }, done).catch(done);
@@ -62,6 +68,27 @@ describe('Repository', () => {
             done();
           }, done).catch(done);
         }, done).catch(done);
+      });
+    });
+  });
+
+  describe('currentVersion', () => {
+    it('returns current version', (done) => {
+      mongoHelper.setupData([
+        { version: 1, body: { id: 1, name: 'Felipe' } },
+        { version: 2, body: { id: 1, name: 'Anderson' } },
+      ]).then(_ => {
+        repo.currentVersion(1).then(version => {
+          expect(version).to.eql(2);
+          done();
+        }, done).catch(done);
+      }, done).catch(done);      
+    });
+
+    it('returns undefined if there is no doc with id', (done) => {
+      repo.currentVersion(12).then(version => {
+        expect(version).to.be.undefined;
+        done();
       });
     });
   });
