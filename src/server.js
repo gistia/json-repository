@@ -59,7 +59,7 @@ class Server {
     };
 
     return new Promise((resolve, reject) => {
-      const buf = new Buffer(req.body.data, 'utf-8');
+      const buf = new Buffer(req.body, 'utf-8');
       zlib.gunzip(buf, (err, result) => {
         if (err) { return reject(err); }
         resolve(JSON.parse(result.toString('utf-8')));
@@ -68,9 +68,32 @@ class Server {
   }
 
   run(port) {
-    this.addRoutes();
-    this.app.listen(port, () => {
-      this.log(`Server listening on port ${port}!`);
+    return new Promise((resolve, reject) => {
+      this.addRoutes();
+      try {
+        this.httpServer = this.app.listen(port, () => {
+          this.log(`Server listening on port ${port}!`);
+          resolve();
+        });
+      } catch(e) {
+        reject(e);
+      }
+    });
+  }
+
+  close() {
+    if (!this.httpServer) {
+      return Promise.reject('no server running');
+    }
+
+    return new Promise((resolve, reject) => {
+      this.httpServer.on('close', () => resolve());
+
+      try {
+        this.httpServer.close();
+      } catch(e) {
+        reject(e);
+      }
     });
   }
 }
