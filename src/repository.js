@@ -43,9 +43,9 @@ class Repository {
         const version = (currentVersion || 0) + 1;
         this.adapter.collection(this.name).then(collection => {
           const envelope = { version, body: doc };
-          collection.insert(envelope, (err, _doc) => {
+          collection.insert(envelope, (err, result) => {
             if (err) { return reject(err); }
-            resolve(_doc);
+            resolve({ version, result });
           });
         }, reject).catch(reject);
       }, reject).catch(reject);

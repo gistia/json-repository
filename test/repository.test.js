@@ -45,7 +45,9 @@ describe('Repository', () => {
 
   describe('store', () => {
     it('stores a new document', (done) => {
-      repo.store({ id: 1, name: 'Felipe' }).then(_doc => {
+      repo.store({ id: 1, name: 'Felipe' }).then(data => {
+        expect(data.version).to.eql(1);
+        
         mongoHelper.retrieveData().then(data => {
           const doc = data[0];
 
