@@ -1,7 +1,7 @@
 {
   "name": "json-repository",
   "description": "Generic JSON document repository",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "main": "src/index.js",
   "license": "MIT",
   "bin": {
