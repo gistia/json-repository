@@ -28,8 +28,7 @@ class Server {
   }
 
   show(req, res) {
-    const id = parseInt(req.params.id, 10);
-    this.repo.retrieve(id).then(doc => {
+    this.repo.retrieve(req.params.id).then(doc => {
       if (!doc) {
         res.status(404).json({ error: 'Not found' });
         return;

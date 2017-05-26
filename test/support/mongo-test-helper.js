@@ -7,13 +7,13 @@ class MongoTestHelper {
   setupData(data) {
     return new Promise((resolve, reject) => {
       this.connect().then(collection => {
-        collection.insertMany(data, (err, doc) => {
+        collection.insertMany(data, (err, res) => {
           if (err) {
             reject(err);
             return;
           }
 
-          resolve(doc);
+          resolve(res);
         });
       });
     });

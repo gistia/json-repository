@@ -26,6 +26,21 @@ describe('Repository', () => {
         }, done).catch(done);
       }, done).catch(done);
     });
+
+    describe('with lock', () => {
+      it('locks the document', (done) => {
+        mongoHelper.setupData([{ version: 1, body: { id: 1, name: 'Felipe' } }]).then(_doc => {
+          repo.retrieve(1, true).then(doc => {
+            expect(doc.name).to.eql('Felipe');
+            mongoHelper.retrieveData().then(data => {
+              const doc = data[0];
+              expect(doc.lockedAt).to.not.be.undefined;
+              done();
+            }, done).catch(done);
+          }, done).catch(done);
+        }, done).catch(done);
+      });
+    });
   });
 
   describe('retrieveVersion', () => {

@@ -60,6 +60,20 @@ describe('Server', () => {
         done();
       }).catch(done);
     });
+
+    it('works with string ids', (done) => {
+      mongoHelper.setupData([
+        { version: 1, body: { id: '1', name: 'Felipe' } },
+        { version: 2, body: { id: '1', name: 'Anderson' } },
+      ]).then(_ => {
+        chai.request(app).get('/tests/1').then(res => {
+          expect(res).to.have.status(200);
+          expect(res.body.id).to.eql('1');
+          expect(res.body.name).to.eql('Anderson');
+          done();
+        }, done).catch(done);
+      });
+    });
   });
 
   describe('create', () => {
