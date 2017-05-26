@@ -14,6 +14,7 @@
     "dotenv": "^4.0.0",
     "es6-promise": "^4.0.5",
     "mongodb": "^2.2.24",
+    "mongodb-promise": "https://github.com/gistia/mongodb-promise.git",
     "request": "^2.79.0"
   },
   "devDependencies": {
